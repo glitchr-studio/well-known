@@ -7,7 +7,6 @@
 
         <defaults public="false" />
 
-        <!-- Litener declarations -->
         <service id="well_known.listener" class="Well\Known\Subscriber\WellKnownListener">
             <tag name="kernel.event_listener" event="kernel.request"  method="onKernelRequest" />
             <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
