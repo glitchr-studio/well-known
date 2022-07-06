@@ -6,14 +6,6 @@
     <services>
 
         <defaults public="false" />
-
-        <service id="well_known.listener" class="Well\Known\Subscriber\WellKnownListener">
-            <tag name="kernel.event_listener" event="kernel.request"  method="onKernelRequest" />
-            <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
-            <argument type="service" id="parameter_bag" />
-            <argument type="service" id="twig" />
-            <argument type="service" id="request_stack" />
-        </service>
-
+        
     </services>
 </container>
