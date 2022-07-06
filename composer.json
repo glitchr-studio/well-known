@@ -13,12 +13,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "Well\\Known\\WellKnown\\": "."
+            "Well\\Known\\": "."
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\Well\\Known\\WellKnown\\": "./Tests"
+            "Tests\\Well\\Known\\": "./Tests"
         }
     },
     "require": {
