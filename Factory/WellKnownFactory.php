@@ -2,6 +2,8 @@
 
 namespace Well\Known\Factory;
 
+use DateTime;
+use DateTimeInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -12,6 +14,7 @@ class WellKnownFactory
         $this->parameterBag = $parameterBag;
 
         $this->filesystem            = new Filesystem();
+        $this->enable                = $this->parameterBag->get("well_known.enable");
         $this->localeUri             = $this->parameterBag->get("well_known.locale_uri");
         $this->basedirWarning        = $this->parameterBag->get("well_known.basedir_warning");
         $this->overrideExistingFiles = $this->parameterBag->get("override_existing");
@@ -45,8 +48,25 @@ class WellKnownFactory
         return false;
     }
 
+    public function datetime(DateTime|string|null $value, string $format = DateTimeInterface::RFC3339): ?string
+    {
+        if($value === null) return null;
+
+        $now = new DateTime("now");
+        $datetime = $value instanceof DateTime ? $value : DateTime::createFromFormat($format, $value);
+        if(!$datetime || $datetime->format($format) !== $value)
+            $datetime = $now->modify($value);
+
+        if($datetime && $datetime->format($format) === $value && $datetime > $now)
+            return $datetime->format($format);
+
+        return null;
+    }
+
     protected function security(): ?string
     {
+        if(!$this->enable) return null;
+
         $fname = $this->format("security.txt");
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
@@ -61,8 +81,8 @@ class WellKnownFactory
         $encryption = $this->parameterBag->get("well_known.security_txt.encryption") ?? null;
         if($encryption) $security .= "Encryption: ".$this->format($encryption).'\n\n';
 
-        $expires    = $this->parameterBag->get("well_known.security_txt.expires");
-        if($expires) $security .= "Expires: ".$this->format($expires).'\n\n';
+        $expires    = $this->datetime($this->parameterBag->get("well_known.security_txt.expires"));
+        if($expires) $security .= "Expires: ".$expires.'\n\n';
 
         $contacts   = $this->parameterBag->get("well_known.security_txt.contacts") ?? [];
         foreach($contacts ?? [] as $contact)
@@ -87,6 +107,8 @@ class WellKnownFactory
 
     protected function robots(): ?string
     {
+        if(!$this->enable) return null;
+
         $fname = $this->format("robots.txt");
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
@@ -110,6 +132,8 @@ class WellKnownFactory
 
     protected function humans(): ?string
     {
+        if(!$this->enable) return null;
+
         $fname = $this->format("humans.txt");
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
@@ -125,6 +149,8 @@ class WellKnownFactory
 
     protected function ads(): ?string
     {
+        if(!$this->enable) return null;
+        
         $fname = $this->format("ads.txt");
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
