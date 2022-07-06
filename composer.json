@@ -13,12 +13,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "Symfony\\UX\\WellKnown\\": "."
+            "Well\\Known\\WellKnown\\": "."
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\Symfony\\UX\\WellKnown\\": "./Tests"
+            "Tests\\Well\\Known\\WellKnown\\": "./Tests"
         }
     },
     "require": {
