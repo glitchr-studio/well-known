@@ -16,8 +16,12 @@ class SecurityTxtWarmer implements CacheWarmerInterface
     public function isOptional():bool { return false; }
     public function warmUp($cacheDir): array
     {
-        if($this->shellVerbosity > 0 && php_sapi_name() == "cli") echo " // Warming up cache... security.txt".PHP_EOL.PHP_EOL;
+        $security = $this->wellKnownFactory->security();
+        if(!$security) return [];
 
-        return [$this->wellKnownFactory->security()];
+        if($this->shellVerbosity > 0 && php_sapi_name() == "cli")
+            echo " // Warming up cache... Well Known Bundle.. security.txt".PHP_EOL.PHP_EOL;
+
+        return [$security];
     }
 }

@@ -16,8 +16,12 @@ class AdsTxtWarmer implements CacheWarmerInterface
     public function isOptional():bool { return true; }
     public function warmUp($cacheDir): array
     {
-        if($this->shellVerbosity > 0 && php_sapi_name() == "cli") echo " // Warming up cache... ads.txt".PHP_EOL.PHP_EOL;
+        $ads = $this->wellKnownFactory->ads();
+        if(!$ads) return [];
 
-        return [$this->wellKnownFactory->ads()];
+        if($this->shellVerbosity > 0 && php_sapi_name() == "cli")
+            echo " // Warming up cache... Well Known Bundle.. ads.txt".PHP_EOL.PHP_EOL;
+
+        return [$ads];
     }
 }

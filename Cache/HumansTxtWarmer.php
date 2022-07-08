@@ -16,8 +16,12 @@ class HumansTxtWarmer implements CacheWarmerInterface
     public function isOptional():bool { return true; }
     public function warmUp($cacheDir): array
     {
-        if($this->shellVerbosity > 0 && php_sapi_name() == "cli") echo " // Warming up cache... humans.txt".PHP_EOL.PHP_EOL;
+        $humans = $this->wellKnownFactory->humans();
+        if(!$humans) return [];
+        
+        if($this->shellVerbosity > 0 && php_sapi_name() == "cli")
+            echo " // Warming up cache... Well Known Bundle.. humans.txt".PHP_EOL.PHP_EOL;
 
-        return [$this->wellKnownFactory->humans()];
+        return [$humans];
     }
 }

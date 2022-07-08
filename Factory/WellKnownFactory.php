@@ -15,29 +15,33 @@ class WellKnownFactory
 
         $this->filesystem            = new Filesystem();
         $this->enable                = $this->parameterBag->get("well_known.enable");
-        $this->localeUri             = $this->parameterBag->get("well_known.locale_uri");
+        $this->locationUri           = $this->parameterBag->get("well_known.location_uri");
         $this->basedirWarning        = $this->parameterBag->get("well_known.basedir_warning");
-        $this->overrideExistingFiles = $this->parameterBag->get("override_existing");
+        $this->overrideExistingFiles = $this->parameterBag->get("well_known.override_existing");
 
         $this->publicDir = $this->parameterBag->get('kernel.project_dir')."/public";
     }
 
-    public function format(string $path)
+    public function format(string $path, ?string $stripPrefix = "")
     {
         if (str_contains($path, "@")) return "mailto: ".str_lstrip(trim($path), "mailto:");
         if (filter_var($path, FILTER_VALIDATE_URL))
             return $path;
 
         if(str_starts_with($path, "/")) 
-            return $this->getPublicDir().$path;
+            return str_lstrip($this->getPublicDir().$path, $stripPrefix);
 
-        return realpath($this->getPublicDir()."/".str_lstrip($this->localeUri, "/")."/".$path);
+        $dir = $this->getPublicDir()."/".str_lstrip($this->locationUri, "/");
+        $this->filesystem->mkdir($dir, 0777, true);
+
+        return str_lstrip($dir."/".$path, $stripPrefix);
     }
 
     public function getPublicDir(): string { return $this->publicDir; }
 
     public function isSafePlace($fname)
     {
+        if ($fname === null) return false;
         if (filter_var($fname, FILTER_VALIDATE_URL)) return true;
         if (str_starts_with($fname, $this->getPublicDir())) {
 
@@ -63,7 +67,7 @@ class WellKnownFactory
         return null;
     }
 
-    protected function security(): ?string
+    public function security(): ?string
     {
         if(!$this->enable) return null;
 
@@ -75,37 +79,39 @@ class WellKnownFactory
             return null;
 
         $security = "";
-        $canonical  = $this->parameterBag->get("well_known.security_txt.canonical") ?? null;
-        if($canonical) $security .= "Canonical: ".$this->format($canonical).'\n\n';
+        $canonical  = $this->parameterBag->get("well_known.resources.security_txt.canonical") ?? null;
+        if($canonical) $security .= "Canonical: ".$this->format($canonical, $this->getPublicDir()).PHP_EOL.PHP_EOL;
 
-        $encryption = $this->parameterBag->get("well_known.security_txt.encryption") ?? null;
-        if($encryption) $security .= "Encryption: ".$this->format($encryption).'\n\n';
+        $encryption = $this->parameterBag->get("well_known.resources.security_txt.encryption") ?? null;
+        if($encryption) $security .= "Encryption: ".$this->format($encryption, $this->getPublicDir()).PHP_EOL.PHP_EOL;
 
-        $expires    = $this->datetime($this->parameterBag->get("well_known.security_txt.expires"));
-        if($expires) $security .= "Expires: ".$expires.'\n\n';
+        $expires    = $this->datetime($this->parameterBag->get("well_known.resources.security_txt.expires"));
+        if($expires) $security .= "Expires: ".$expires.PHP_EOL.PHP_EOL;
 
-        $contacts   = $this->parameterBag->get("well_known.security_txt.contacts") ?? [];
+        $contacts   = $this->parameterBag->get("well_known.resources.security_txt.contacts") ?? [];
         foreach($contacts ?? [] as $contact)
-            $security .= "Contact: ".$this->format($contact).'\n';
-        if(count($contacts)) $security .= "\n";
+            $security .= "Contact: ".$this->format($contact, $this->getPublicDir()).PHP_EOL;
+        if(count($contacts)) $security .= PHP_EOL;
         
-        $format    = $this->parameterBag->get("well_known.security_txt.acknowledgements");
-        if($format) $security .= "Acknowledgements: ".$this->format($format).'\n\n';
+        $format    = $this->parameterBag->get("well_known.resources.security_txt.acknowledgements");
+        if($format) $security .= "Acknowledgements: ".$this->format($format, $this->getPublicDir()).PHP_EOL.PHP_EOL;
 
-        $policy    = $this->parameterBag->get("well_known.security_txt.policy");
-        if($policy) $security .= "Policy: ".$this->format($policy).'\n\n';
+        $policy    = $this->parameterBag->get("well_known.resources.security_txt.policy");
+        if($policy) $security .= "Policy: ".$this->format($policy, $this->getPublicDir()).PHP_EOL.PHP_EOL;
         
-        $hiring    = $this->parameterBag->get("well_known.security_txt.hirting");
-        if($hiring) $security .= "Hiring: ".$this->format($hiring).'\n\n';
+        $hiring    = $this->parameterBag->get("well_known.resources.security_txt.hirting");
+        if($hiring) $security .= "Hiring: ".$this->format($hiring, $this->getPublicDir()).PHP_EOL.PHP_EOL;
 
-        $preferredLanguages = $this->parameterBag->get("well_known.security_txt.preferred_languages");
+        $preferredLanguages = $this->parameterBag->get("well_known.resources.security_txt.preferred_languages");
         if($preferredLanguages) $security .= "Preferred-Languages: ".implode(",", $preferredLanguages);
 
-        $this->filesystem->dumpFile($fname, $security);
-        return $fname;
+        if($security) 
+            $this->filesystem->dumpFile($fname, $security);
+        
+        return $security ? $fname : null;
     }
 
-    protected function robots(): ?string
+    public function robots(): ?string
     {
         if(!$this->enable) return null;
 
@@ -117,20 +123,22 @@ class WellKnownFactory
             return null;
 
         $robots = "";
-        $entries = $this->parameterBag->get("well_known.robots_txt") ?? [];
+        $entries = $this->parameterBag->get("well_known.resources.robots_txt") ?? [];
         foreach($entries as $entry) {
 
             foreach($entry["user-agent"] ?? [] as $_)
                 $robots .= "User-Agent: ".$_;
             foreach($entry["disallow"] ?? [] as $_)
-                $robots .= "Disallow: ".$this->format($_);
+                $robots .= "Disallow: ".$this->format($_, $this->getPublicDir());
         }
 
-        $this->filesystem->dumpFile($fname, $robots);
-        return $fname;
+        if($robots)
+            $this->filesystem->dumpFile($fname, $robots);
+
+        return $robots ? $fname : null;
     }
 
-    protected function humans(): ?string
+    public function humans(): ?string
     {
         if(!$this->enable) return null;
 
@@ -141,13 +149,17 @@ class WellKnownFactory
         if(!$this->isSafePlace($fname)) 
             return null;
 
-        $humansTxt = $this->parameterBag->get("well_known.humans_txt") ?? null;
-        $this->filesystem->dumpFile($fname, $humansTxt ? file_get_contents($humansTxt) : null);
-        
-        return null;
+        $humansTxt = $this->parameterBag->get("well_known.resources.humans_txt") ?? null;
+        if(!file_exists($humansTxt)) return null;
+
+        $humans = $humansTxt ? file_get_contents($humansTxt) : null;
+        if($humans)
+            $this->filesystem->dumpFile($fname, $humans);
+
+        return $humans ? $fname : null;
     }
 
-    protected function ads(): ?string
+    public function ads(): ?string
     {
         if(!$this->enable) return null;
         
@@ -159,12 +171,13 @@ class WellKnownFactory
             return null;
 
         $ads = "";
-        $entries = $this->parameterBag->get("well_known.ads_txt") ?? [];
+        $entries = $this->parameterBag->get("well_known.resources.ads_txt") ?? [];
         foreach($entries as $entry)
             $ads .= implode(" ", $entry);
-
-        $this->filesystem->dumpFile($fname, $ads);
-        
-        return null;
+ 
+        if($ads)
+            $this->filesystem->dumpFile($fname, $ads);
+    
+        return $ads ? $fname : null;
     }
 }

@@ -16,8 +16,12 @@ class RobotsTxtWarmer implements CacheWarmerInterface
     public function isOptional():bool { return true; }
     public function warmUp($cacheDir): array
     {
-        if($this->shellVerbosity > 0 && php_sapi_name() == "cli") echo " // Warming up cache... robots.txt".PHP_EOL.PHP_EOL;
+        $robots = $this->wellKnownFactory->robots();
+        if(!$robots) return [];
 
-        return [$this->wellKnownFactory->robots()];
+        if($robots && $this->shellVerbosity > 0 && php_sapi_name() == "cli")
+            echo " // Warming up cache... Well Known Bundle.. robots.txt".PHP_EOL.PHP_EOL;
+
+        return [$robots];
     }
 }
