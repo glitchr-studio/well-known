@@ -60,7 +60,7 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                
+
                 ->arrayNode('resources')->addDefaultsIfNotSet()
                     ->children()
 
@@ -102,13 +102,13 @@ class Configuration implements ConfigurationInterface
 
                                 ->arrayNode('contacts')
                                     ->addDefaultChildrenIfNoneSet()
-                                        ->prototype('scalar')->defaultValue('postmaster@%env(DOMAIN)%')
+                                        ->prototype('scalar')
                                     ->end()
                                 ->end()
 
                                 ->arrayNode('preferred_languages')
                                     ->addDefaultChildrenIfNoneSet()
-                                        ->prototype('scalar')->defaultValue('postmaster@%env(DOMAIN)%')
+                                        ->prototype('scalar')
                                     ->end()
                                 ->end()
 
@@ -123,7 +123,6 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        
                     ->end()
                 ->end()
             ->end();
