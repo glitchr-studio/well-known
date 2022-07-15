@@ -28,7 +28,7 @@ class WellKnownFactory
         if (filter_var($path, FILTER_VALIDATE_URL))
             return $path;
 
-        if(str_starts_with($path, "/")) 
+        if(str_starts_with($path, "/"))
             return str_lstrip($this->getPublicDir().$path, $stripPrefix);
 
         $dir = $this->getPublicDir()."/".str_lstrip($this->locationUri, "/");
@@ -75,7 +75,7 @@ class WellKnownFactory
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
 
-        if(!$this->isSafePlace($fname)) 
+        if(!$this->isSafePlace($fname))
             return null;
 
         $security = "";
@@ -92,22 +92,22 @@ class WellKnownFactory
         foreach($contacts ?? [] as $contact)
             $security .= "Contact: ".$this->format($contact, $this->getPublicDir()).PHP_EOL;
         if(count($contacts)) $security .= PHP_EOL;
-        
+
         $format    = $this->parameterBag->get("well_known.resources.security_txt.acknowledgements");
         if($format) $security .= "Acknowledgements: ".$this->format($format, $this->getPublicDir()).PHP_EOL.PHP_EOL;
 
         $policy    = $this->parameterBag->get("well_known.resources.security_txt.policy");
         if($policy) $security .= "Policy: ".$this->format($policy, $this->getPublicDir()).PHP_EOL.PHP_EOL;
-        
+
         $hiring    = $this->parameterBag->get("well_known.resources.security_txt.hirting");
         if($hiring) $security .= "Hiring: ".$this->format($hiring, $this->getPublicDir()).PHP_EOL.PHP_EOL;
 
         $preferredLanguages = $this->parameterBag->get("well_known.resources.security_txt.preferred_languages");
         if($preferredLanguages) $security .= "Preferred-Languages: ".implode(",", $preferredLanguages);
 
-        if($security) 
+        if($security)
             $this->filesystem->dumpFile($fname, $security);
-        
+
         return $security ? $fname : null;
     }
 
@@ -119,7 +119,7 @@ class WellKnownFactory
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
 
-        if(!$this->isSafePlace($fname)) 
+        if(!$this->isSafePlace($fname))
             return null;
 
         $robots = "";
@@ -146,11 +146,11 @@ class WellKnownFactory
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
 
-        if(!$this->isSafePlace($fname)) 
+        if(!$this->isSafePlace($fname))
             return null;
 
         $humansTxt = $this->parameterBag->get("well_known.resources.humans_txt") ?? null;
-        if(!file_exists($humansTxt)) return null;
+        if($humansTxt == null || !file_exists($humansTxt)) return null;
 
         $humans = $humansTxt ? file_get_contents($humansTxt) : null;
         if($humans)
@@ -162,22 +162,22 @@ class WellKnownFactory
     public function ads(): ?string
     {
         if(!$this->enable) return null;
-        
+
         $fname = $this->format("ads.txt");
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
 
-        if(!$this->isSafePlace($fname)) 
+        if(!$this->isSafePlace($fname))
             return null;
 
         $ads = "";
         $entries = $this->parameterBag->get("well_known.resources.ads_txt") ?? [];
         foreach($entries as $entry)
             $ads .= implode(" ", $entry);
- 
+
         if($ads)
             $this->filesystem->dumpFile($fname, $ads);
-    
+
         return $ads ? $fname : null;
     }
 }
