@@ -88,6 +88,10 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
 
+                        ->scalarNode('change_password')
+                            ->info('Change password page')
+                        ->end()
+
                         ->arrayNode('security_txt')->addDefaultsIfNotSet()
                             ->children()
                                 ->scalarNode('canonical')
@@ -115,6 +119,7 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode('acknowledgements')
                                     ->info('Acknowledgement page ')
                                 ->end()
+
                                 ->scalarNode('policy')
                                     ->info('Policy page')
                                 ->end()

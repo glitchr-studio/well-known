@@ -127,15 +127,36 @@ class WellKnownFactory
         foreach($entries as $entry) {
 
             foreach($entry["user-agent"] ?? [] as $_)
-                $robots .= "User-Agent: ".$_;
+                $robots .= "User-Agent: ".$_.PHP_EOL.PHP_EOL;
             foreach($entry["disallow"] ?? [] as $_)
-                $robots .= "Disallow: ".$this->format($_, $this->getPublicDir());
+                $robots .= "Disallow: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
         }
 
         if($robots)
             $this->filesystem->dumpFile($fname, $robots);
 
         return $robots ? $fname : null;
+    }
+
+    public function htaccess(): ?string
+    {
+        
+        $fname = $this->format(".htaccess");
+        if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
+            return null;
+
+        if(!$this->isSafePlace($fname))
+            return null;
+
+        $htaccess = "";
+
+        $format    = $this->parameterBag->get("well_known.resources.change_password");
+        if($format) $htaccess .= "Redirect 301 /.well-known/change-password ".$this->format($format, $this->getPublicDir()).PHP_EOL;
+
+        if($htaccess)
+            $this->filesystem->dumpFile($fname, $htaccess);
+
+        return $htaccess ? $fname : null;
     }
 
     public function humans(): ?string
