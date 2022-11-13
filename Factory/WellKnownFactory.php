@@ -17,6 +17,7 @@ class WellKnownFactory
         $this->enable                = $this->parameterBag->get("well_known.enable");
         $this->locationUri           = $this->parameterBag->get("well_known.location_uri");
         $this->basedirWarning        = $this->parameterBag->get("well_known.basedir_warning");
+        $this->aliasToPublic         = $this->parameterBag->get("well_known.alias_to_public");
         $this->overrideExistingFiles = $this->parameterBag->get("well_known.override_existing");
 
         $this->publicDir = $this->parameterBag->get('kernel.project_dir')."/public";
@@ -105,10 +106,26 @@ class WellKnownFactory
         $preferredLanguages = $this->parameterBag->get("well_known.resources.security_txt.preferred_languages");
         if($preferredLanguages) $security .= "Preferred-Languages: ".implode(",", $preferredLanguages);
 
-        if($security)
+        if($security) {
+
             $this->filesystem->dumpFile($fname, $security);
+            if($this->aliasToPublic) $this->createSymbolink($fname);
+        }
 
         return $security ? $fname : null;
+    }
+
+    public function createSymbolink(string $fname)
+    {
+        $publicPath = $this->getPublicDir()."/".basename($fname);
+        if(file_exists($publicPath)) {
+
+            if(is_link($publicPath)) unlink($publicPath);
+            else if(is_emptydir($publicPath)) rmdir($publicPath);
+            else exit("Public path \"$publicPath\" already exists but it is not a symlink\n");
+        }
+
+        symlink($fname, $publicPath);
     }
 
     public function robots(): ?string
@@ -132,15 +149,16 @@ class WellKnownFactory
                 $robots .= "Disallow: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
         }
 
-        if($robots)
+        if($robots) {
             $this->filesystem->dumpFile($fname, $robots);
+            if($this->aliasToPublic) $this->createSymbolink($fname);
+        }
 
         return $robots ? $fname : null;
     }
 
     public function htaccess(): ?string
     {
-        
         $fname = $this->format(".htaccess");
         if($this->filesystem->exists($fname) && !$this->overrideExistingFiles)
             return null;
@@ -174,8 +192,10 @@ class WellKnownFactory
         if($humansTxt == null || !file_exists($humansTxt)) return null;
 
         $humans = $humansTxt ? file_get_contents($humansTxt) : null;
-        if($humans)
+        if($humans) {
             $this->filesystem->dumpFile($fname, $humans);
+            if($this->aliasToPublic) $this->createSymbolink($fname);
+        }
 
         return $humans ? $fname : null;
     }
@@ -196,8 +216,10 @@ class WellKnownFactory
         foreach($entries as $entry)
             $ads .= implode(" ", $entry);
 
-        if($ads)
+        if($ads) {
             $this->filesystem->dumpFile($fname, $ads);
+            if($this->aliasToPublic) $this->createSymbolink($fname);
+        }
 
         return $ads ? $fname : null;
     }
