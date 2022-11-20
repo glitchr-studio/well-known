@@ -1,5 +1,5 @@
 {
-    "name": "xkzl/well-known",
+    "name": "glitchr/well-known",
     "type": "symfony-bundle",
     "description": ".well-known directory integration for Symfony",
     "keywords": ["symfony", "ux", "crisp"],
