@@ -4,11 +4,11 @@
     "description": ".well-known directory integration for Symfony",
     "keywords": ["symfony", "ux", "crisp"],
     "homepage": "https://symfony.com",
-    "license": "GPL",
+    "license": "LGPL-3.0-or-later",
     "authors": [
         {
             "name": "Marco Meyer",
-            "email": "support@glitchr.io"
+            "email": "marco.meyer@glitchr.io"
         }
     ],
     "autoload": {
