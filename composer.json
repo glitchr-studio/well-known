@@ -4,7 +4,7 @@
     "description": ".well-known directory integration for Symfony",
     "keywords": ["symfony", "ux", "crisp"],
     "homepage": "https://symfony.com",
-    "license": "MIT",
+    "license": "GPL",
     "authors": [
         {
             "name": "Marco Meyer",
