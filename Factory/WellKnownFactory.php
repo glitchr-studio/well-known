@@ -143,7 +143,7 @@ class WellKnownFactory
         $entries = $this->parameterBag->get("well_known.resources.robots_txt") ?? [];
         foreach($entries as $entry) {
 
-            foreach($entry["user-agent"] ?? [] as $_)
+            foreach($entry["user-agent"] ?? ["*"] as $_)
                 $robots .= "User-Agent: ".$_.PHP_EOL.PHP_EOL;
             foreach($entry["disallow"] ?? [] as $_)
                 $robots .= "Disallow: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
