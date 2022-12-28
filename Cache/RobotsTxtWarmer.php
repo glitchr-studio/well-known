@@ -7,6 +7,16 @@ use Well\Known\Factory\WellKnownFactory;
 
 class RobotsTxtWarmer implements CacheWarmerInterface
 {
+    /**
+     * @var string
+     */
+    protected string $shellVerbosity;
+
+    /**
+     * @var WellKnownFactory
+     */
+    protected $wellKnownFactory;
+
     public function __construct(WellKnownFactory $wellKnownFactory)
     {
         $this->shellVerbosity = getenv("SHELL_VERBOSITY");

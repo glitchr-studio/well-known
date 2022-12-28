@@ -9,6 +9,46 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class WellKnownFactory
 {
+    /**
+     * @var ParameterBagInterface
+     */
+    protected $parameterBag;
+
+    /**
+     * @var Filesystem
+     */
+    protected $filesystem;
+
+    /**
+     * @var bool
+     */
+    protected bool $enable;
+
+    /**
+     * @var string
+     */
+    protected string $basedirWarning;
+
+    /**
+     * @var string
+     */
+    protected string $aliasToPublic;
+
+    /**
+     * @var string
+     */
+    protected string $overrideExistingFiles;
+
+    /**
+     * @var string
+     */
+    protected string $publicDir;
+
+    /**
+     * @var string
+     */
+    protected string $locationUri;
+
     public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->parameterBag = $parameterBag;
