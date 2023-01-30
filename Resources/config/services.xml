@@ -11,11 +11,10 @@
             <argument type="service" id="parameter_bag" />
         </service>
 
-        <service id="Well\Known\Cache\AdsTxtWarmer"      public="true"><tag name="kernel.cache_warmer" /><argument type="service" id="well_known.factory" /></service>
-        <service id="Well\Known\Cache\HumansTxtWarmer"   public="true"><tag name="kernel.cache_warmer" /><argument type="service" id="well_known.factory" /></service>
-        <service id="Well\Known\Cache\RobotsTxtWarmer"   public="true"><tag name="kernel.cache_warmer" /><argument type="service" id="well_known.factory" /></service>
-        <service id="Well\Known\Cache\SecurityTxtWarmer" public="true"><tag name="kernel.cache_warmer" /><argument type="service" id="well_known.factory" /></service>
-        <service id="Well\Known\Cache\HtaccessWarmer"    public="true"><tag name="kernel.cache_warmer" /><argument type="service" id="well_known.factory" /></service>
+        <service id="Well\Known\DependencyInjection\CacheWarmer"      public="true">
+            <tag name="kernel.cache_warmer" />
+            <argument type="service" id="well_known.factory" />
+        </service>
 
     </services>
 </container>
