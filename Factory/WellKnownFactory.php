@@ -185,8 +185,12 @@ class WellKnownFactory
 
             foreach($entry["user-agent"] ?? ["*"] as $_)
                 $robots .= "User-Agent: ".$_.PHP_EOL.PHP_EOL;
+            foreach($entry["allow"] ?? [] as $_)
+                $robots .= "Allow: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
             foreach($entry["disallow"] ?? [] as $_)
                 $robots .= "Disallow: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+            foreach($entry["sitemap"] ?? [] as $_)
+                $robots .= "Sitemap: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
         }
 
         if($robots) {
