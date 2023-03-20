@@ -23,7 +23,10 @@ class Configuration implements ConfigurationInterface
     }
 
     private $treeBuilder;
-    public function getTreeBuilder() : TreeBuilder { return $this->treeBuilder; }
+    public function getTreeBuilder(): TreeBuilder
+    {
+        return $this->treeBuilder;
+    }
 
     private function addGlobalOptionsSection(ArrayNodeDefinition $rootNode)
     {
@@ -31,19 +34,19 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->booleanNode('enable')
                     ->info('Enable feature')
-                    ->defaultValue(True)
+                    ->defaultValue(true)
                     ->end()
                 ->booleanNode('basedir_warning')
                     ->info('Make sure to display warning message in case this bundle is enabled but website not at the root')
-                    ->defaultValue(True)
+                    ->defaultValue(true)
                     ->end()
                 ->booleanNode('alias_to_public')
                     ->info('Make sure to create symbolink from files into .well_known directory to public root')
-                    ->defaultValue(True)
+                    ->defaultValue(true)
                     ->end()
                 ->booleanNode('override_existing')
                     ->info('Override text files in case it already exists')
-                    ->defaultValue(True)
+                    ->defaultValue(true)
                     ->end()
 
                 ->scalarNode('location_uri')
