@@ -62,6 +62,6 @@ class CacheWarmer implements CacheWarmerInterface
             echo PHP_EOL.PHP_EOL;
         }
 
-        return [$security, $robots, $humans, $ads, $htaccess];
+        return array_filter([$security, $robots, $humans, $ads, $htaccess]);
     }
 }
