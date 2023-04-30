@@ -14,7 +14,7 @@ class WellKnownExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         // Format XML
-        $loader = new XmlFileLoader($container, new FileLocator(\dirname(__DIR__, 1).'/Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(\dirname(__DIR__).'/Resources/config'));
         $loader->load('services.xml');
 
         $processor = new Processor();
