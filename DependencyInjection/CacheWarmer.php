@@ -15,18 +15,19 @@ class CacheWarmer implements CacheWarmerInterface
     /**
      * @var WellKnownFactory
      */
-    protected $wellKnownFactory;
+    protected WellKnownFactory $wellKnownFactory;
 
     public function __construct(WellKnownFactory $wellKnownFactory)
     {
         $this->shellVerbosity = getenv("SHELL_VERBOSITY");
-        $this->wellKnownFactory   = $wellKnownFactory;
+        $this->wellKnownFactory = $wellKnownFactory;
     }
 
     public function isOptional(): bool
     {
         return true;
     }
+
     public function warmUp($cacheDir): array
     {
         if ($this->shellVerbosity > 0 && php_sapi_name() == "cli") {
@@ -59,7 +60,7 @@ class CacheWarmer implements CacheWarmerInterface
         }
 
         if ($this->shellVerbosity > 0 && php_sapi_name() == "cli") {
-            echo PHP_EOL.PHP_EOL;
+            echo PHP_EOL . PHP_EOL;
         }
 
         return array_filter([$security, $robots, $humans, $ads, $htaccess]);

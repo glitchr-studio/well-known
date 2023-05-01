@@ -53,33 +53,33 @@ class WellKnownFactory
     {
         $this->parameterBag = $parameterBag;
 
-        $this->filesystem            = new Filesystem();
-        $this->enable                = $this->parameterBag->get("well_known.enable");
-        $this->locationUri           = $this->parameterBag->get("well_known.location_uri");
-        $this->basedirWarning        = $this->parameterBag->get("well_known.basedir_warning");
-        $this->aliasToPublic         = $this->parameterBag->get("well_known.alias_to_public");
+        $this->filesystem = new Filesystem();
+        $this->enable = $this->parameterBag->get("well_known.enable");
+        $this->locationUri = $this->parameterBag->get("well_known.location_uri");
+        $this->basedirWarning = $this->parameterBag->get("well_known.basedir_warning");
+        $this->aliasToPublic = $this->parameterBag->get("well_known.alias_to_public");
         $this->overrideExistingFiles = $this->parameterBag->get("well_known.override_existing");
 
-        $this->publicDir = $this->parameterBag->get('kernel.project_dir')."/public";
+        $this->publicDir = $this->parameterBag->get('kernel.project_dir') . "/public";
     }
 
     public function format(string $path, ?string $stripPrefix = "")
     {
         if (str_contains($path, "@")) {
-            return "mailto: ".str_lstrip(trim($path), "mailto:");
+            return "mailto: " . str_lstrip(trim($path), "mailto:");
         }
         if (filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         if (str_starts_with($path, "/")) {
-            return str_lstrip($this->getPublicDir().$path, $stripPrefix);
+            return str_lstrip($this->getPublicDir() . $path, $stripPrefix);
         }
 
-        $dir = $this->getPublicDir()."/".str_lstrip($this->locationUri, "/");
-        $this->filesystem->mkdir($dir, 0777, true);
+        $dir = $this->getPublicDir() . "/" . str_lstrip($this->locationUri, "/");
+        $this->filesystem->mkdir($dir);
 
-        return str_lstrip($dir."/".$path, $stripPrefix);
+        return str_lstrip($dir . "/" . $path, $stripPrefix);
     }
 
     public function getPublicDir(): string
@@ -140,47 +140,47 @@ class WellKnownFactory
         }
 
         $security = "";
-        $canonical  = $this->parameterBag->get("well_known.resources.security_txt.canonical") ?? null;
+        $canonical = $this->parameterBag->get("well_known.resources.security_txt.canonical") ?? null;
         if ($canonical) {
-            $security .= "Canonical: ".$this->format($canonical, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+            $security .= "Canonical: " . $this->format($canonical, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
         }
 
         $encryption = $this->parameterBag->get("well_known.resources.security_txt.encryption") ?? null;
         if ($encryption) {
-            $security .= "Encryption: ".$this->format($encryption, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+            $security .= "Encryption: " . $this->format($encryption, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
         }
 
-        $expires    = $this->datetime($this->parameterBag->get("well_known.resources.security_txt.expires"));
+        $expires = $this->datetime($this->parameterBag->get("well_known.resources.security_txt.expires"));
         if ($expires) {
-            $security .= "Expires: ".$expires.PHP_EOL.PHP_EOL;
+            $security .= "Expires: " . $expires . PHP_EOL . PHP_EOL;
         }
 
-        $contacts   = $this->parameterBag->get("well_known.resources.security_txt.contacts") ?? [];
+        $contacts = $this->parameterBag->get("well_known.resources.security_txt.contacts") ?? [];
         foreach ($contacts ?? [] as $contact) {
-            $security .= "Contact: ".$this->format($contact, $this->getPublicDir()).PHP_EOL;
+            $security .= "Contact: " . $this->format($contact, $this->getPublicDir()) . PHP_EOL;
         }
         if (count($contacts)) {
             $security .= PHP_EOL;
         }
 
-        $format    = $this->parameterBag->get("well_known.resources.security_txt.acknowledgements");
+        $format = $this->parameterBag->get("well_known.resources.security_txt.acknowledgements");
         if ($format) {
-            $security .= "Acknowledgements: ".$this->format($format, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+            $security .= "Acknowledgements: " . $this->format($format, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
         }
 
-        $policy    = $this->parameterBag->get("well_known.resources.security_txt.policy");
+        $policy = $this->parameterBag->get("well_known.resources.security_txt.policy");
         if ($policy) {
-            $security .= "Policy: ".$this->format($policy, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+            $security .= "Policy: " . $this->format($policy, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
         }
 
-        $hiring    = $this->parameterBag->get("well_known.resources.security_txt.hirting");
+        $hiring = $this->parameterBag->get("well_known.resources.security_txt.hirting");
         if ($hiring) {
-            $security .= "Hiring: ".$this->format($hiring, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+            $security .= "Hiring: " . $this->format($hiring, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
         }
 
         $preferredLanguages = $this->parameterBag->get("well_known.resources.security_txt.preferred_languages");
         if ($preferredLanguages) {
-            $security .= "Preferred-Languages: ".implode(",", $preferredLanguages);
+            $security .= "Preferred-Languages: " . implode(",", $preferredLanguages);
         }
 
         if ($security) {
@@ -195,7 +195,7 @@ class WellKnownFactory
 
     public function createSymbolink(string $fname)
     {
-        $publicPath = $this->getPublicDir()."/".basename($fname);
+        $publicPath = $this->getPublicDir() . "/" . basename($fname);
         if (file_exists($publicPath)) {
             if (is_link($publicPath)) {
                 unlink($publicPath);
@@ -228,16 +228,16 @@ class WellKnownFactory
         $entries = $this->parameterBag->get("well_known.resources.robots_txt") ?? [];
         foreach ($entries as $entry) {
             foreach ($entry["user-agent"] ?? ["*"] as $_) {
-                $robots .= "User-Agent: ".$_.PHP_EOL.PHP_EOL;
+                $robots .= "User-Agent: " . $_ . PHP_EOL . PHP_EOL;
             }
             foreach ($entry["allow"] ?? [] as $_) {
-                $robots .= "Allow: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+                $robots .= "Allow: " . $this->format($_, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
             }
             foreach ($entry["disallow"] ?? [] as $_) {
-                $robots .= "Disallow: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+                $robots .= "Disallow: " . $this->format($_, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
             }
             foreach ($entry["sitemap"] ?? [] as $_) {
-                $robots .= "Sitemap: ".$this->format($_, $this->getPublicDir()).PHP_EOL.PHP_EOL;
+                $robots .= "Sitemap: " . $this->format($_, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
             }
         }
 
@@ -264,9 +264,9 @@ class WellKnownFactory
 
         $htaccess = "";
 
-        $format    = $this->parameterBag->get("well_known.resources.change_password");
+        $format = $this->parameterBag->get("well_known.resources.change_password");
         if ($format) {
-            $htaccess .= "Redirect 301 /.well-known/change-password ".$this->format($format, $this->getPublicDir()).PHP_EOL;
+            $htaccess .= "Redirect 301 /.well-known/change-password " . $this->format($format, $this->getPublicDir()) . PHP_EOL;
         }
 
         if ($htaccess) {
@@ -296,7 +296,7 @@ class WellKnownFactory
             return null;
         }
 
-        $humans = $humansTxt ? file_get_contents($humansTxt) : null;
+        $humans = file_get_contents($humansTxt);
         if ($humans) {
             $this->filesystem->dumpFile($fname, $humans);
             if ($this->aliasToPublic) {
