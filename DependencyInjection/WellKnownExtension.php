@@ -10,12 +10,15 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use function dirname;
 
+/**
+ *
+ */
 class WellKnownExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
         // Format XML
-        $loader = new XmlFileLoader($container, new FileLocator(dirname(__DIR__).'/Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(dirname(__DIR__) . '/Resources/config'));
         $loader->load('services.xml');
 
         $processor = new Processor();
@@ -24,11 +27,17 @@ class WellKnownExtension extends Extension
         $this->setConfiguration($container, $config, $configuration->getTreeBuilder()->getRootNode()->getNode()->getName());
     }
 
+    /**
+     * @param ContainerBuilder $container
+     * @param array $config
+     * @param $globalKey
+     * @return void
+     */
     public function setConfiguration(ContainerBuilder $container, array $config, $globalKey = "")
     {
         foreach ($config as $key => $value) {
             if (!empty($globalKey)) {
-                $key = $globalKey.".".$key;
+                $key = $globalKey . "." . $key;
             }
 
             if (is_array($value)) {

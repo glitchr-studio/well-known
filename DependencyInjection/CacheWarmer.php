@@ -5,6 +5,9 @@ namespace Well\Known\DependencyInjection;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Well\Known\Factory\WellKnownFactory;
 
+/**
+ *
+ */
 class CacheWarmer implements CacheWarmerInterface
 {
     /**
@@ -28,6 +31,10 @@ class CacheWarmer implements CacheWarmerInterface
         return true;
     }
 
+    /**
+     * @param $cacheDir
+     * @return array|string[]
+     */
     public function warmUp($cacheDir): array
     {
         if ($this->shellVerbosity > 0 && php_sapi_name() == "cli") {

@@ -7,6 +7,9 @@ use DateTimeInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ *
+ */
 class WellKnownFactory
 {
     /**
@@ -63,6 +66,11 @@ class WellKnownFactory
         $this->publicDir = $this->parameterBag->get('kernel.project_dir') . "/public";
     }
 
+    /**
+     * @param string $path
+     * @param string|null $stripPrefix
+     * @return string|null
+     */
     public function format(string $path, ?string $stripPrefix = "")
     {
         if (str_contains($path, "@")) {
@@ -87,6 +95,10 @@ class WellKnownFactory
         return $this->publicDir;
     }
 
+    /**
+     * @param $fname
+     * @return bool
+     */
     public function isSafePlace($fname)
     {
         if ($fname === null) {
