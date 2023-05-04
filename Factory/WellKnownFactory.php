@@ -208,16 +208,14 @@ class WellKnownFactory
     public function createSymbolink(string $fname)
     {
         $publicPath = $this->getPublicDir() . "/" . basename($fname);
-        if (file_exists($publicPath)) {
-            if (is_link($publicPath)) {
-                unlink($publicPath);
-            } elseif (is_emptydir($publicPath)) {
-                rmdir($publicPath);
-            } else {
-                exit("Public path \"$publicPath\" already exists but it is not a symlink\n");
-            }
+        if (is_link($publicPath)) {
+            unlink($publicPath);
+        } elseif (is_emptydir($publicPath)) {
+            rmdir($publicPath);
+        } else if(file_exists($publicPath)) {
+            exit("Public path \"$publicPath\" already exists but it is not a symlink\n");
         }
-
+	
         symlink($fname, $publicPath);
     }
 
