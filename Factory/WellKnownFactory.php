@@ -210,12 +210,12 @@ class WellKnownFactory
         $publicPath = $this->getPublicDir() . "/" . basename($fname);
         if (is_link($publicPath)) {
             unlink($publicPath);
-        } elseif (is_emptydir($publicPath)) {
+        } elseif (file_exists($publicPath) && is_emptydir($publicPath)) {
             rmdir($publicPath);
-        } else if(file_exists($publicPath)) {
+        } else if(file_exists($publicPath) && !is_dir($publicPath)) {
             exit("Public path \"$publicPath\" already exists but it is not a symlink\n");
         }
-	
+
         symlink($fname, $publicPath);
     }
 
