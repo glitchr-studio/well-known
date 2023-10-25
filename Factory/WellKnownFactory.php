@@ -66,6 +66,38 @@ class WellKnownFactory
         $this->publicDir = $this->parameterBag->get('kernel.project_dir') . "/public";
     }
 
+    protected function StringStripPrefix(?string $haystack, array|string $needle = " ", bool $recursive = true): ?string
+    {
+        if ($haystack === null) {
+            return null;
+        }
+        if (is_array($needle)) {
+            $lastHaystack = null;
+            while ($haystack != $lastHaystack) {
+                $lastHaystack = $haystack;
+                foreach ($needle as $n) {
+                    $haystack = $this->StringStripPrefix($haystack, $n);
+                }
+            }
+
+            return $haystack;
+        }
+
+        $needleLength = strlen($needle);
+        if (!$needleLength) {
+            return $haystack;
+        }
+
+        while (strrpos($haystack, $needle) !== false && !empty($needle) && str_starts_with($haystack, $needle)) {
+            $haystack = substr($haystack, $needleLength);
+            if (!$recursive) {
+                break;
+            }
+        }
+
+        return $haystack;
+    }
+
     /**
      * @param string $path
      * @param string|null $stripPrefix
@@ -74,20 +106,20 @@ class WellKnownFactory
     public function format(string $path, ?string $stripPrefix = "")
     {
         if (str_contains($path, "@")) {
-            return "mailto: " . str_lstrip(trim($path), "mailto:");
+            return "mailto: " . $this->StringStripPrefix(trim($path), "mailto:");
         }
         if (filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         if (str_starts_with($path, "/")) {
-            return str_lstrip($this->getPublicDir() . $path, $stripPrefix);
+            return $this->StringStripPrefix($this->getPublicDir() . $path, $stripPrefix);
         }
 
-        $dir = $this->getPublicDir() . "/" . str_lstrip($this->locationUri, "/");
+        $dir = $this->getPublicDir() . "/" . $this->StringStripPrefix($this->locationUri, "/");
         $this->filesystem->mkdir($dir);
 
-        return str_lstrip($dir . "/" . $path, $stripPrefix);
+        return $this->StringStripPrefix($dir . "/" . $path, $stripPrefix);
     }
 
     public function getPublicDir(): string
@@ -108,7 +140,7 @@ class WellKnownFactory
             return true;
         }
         if (str_starts_with($fname, $this->getPublicDir())) {
-            $base = explode("/", str_lstrip($fname, $this->getPublicDir()), 1)[0];
+            $base = explode("/", $this->StringStripPrefix($fname, $this->getPublicDir()), 1)[0];
             if (!in_array($base, ["bundles", "assets", "storage"])) {
                 return true;
             }
@@ -167,8 +199,12 @@ class WellKnownFactory
             $security .= "Expires: " . $expires . PHP_EOL . PHP_EOL;
         }
 
-        $contacts = $this->parameterBag->get("well_known.resources.security_txt.contacts") ?? [];
-        foreach ($contacts ?? [] as $contact) {
+        $contacts = [];
+        if ($this->parameterBag->has("well_known.resources.security_txt.contacts")) {
+            $contacts = $this->parameterBag->get("well_known.resources.security_txt.contacts") ?? [];
+        }
+        
+        foreach ($contacts as $contact) {
             $security .= "Contact: " . $this->format($contact, $this->getPublicDir()) . PHP_EOL;
         }
         if (count($contacts)) {
@@ -185,12 +221,16 @@ class WellKnownFactory
             $security .= "Policy: " . $this->format($policy, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
         }
 
-        $hiring = $this->parameterBag->get("well_known.resources.security_txt.hirting");
+        $hiring = $this->parameterBag->get("well_known.resources.security_txt.hiring");
         if ($hiring) {
             $security .= "Hiring: " . $this->format($hiring, $this->getPublicDir()) . PHP_EOL . PHP_EOL;
         }
 
-        $preferredLanguages = $this->parameterBag->get("well_known.resources.security_txt.preferred_languages");
+        $preferredLanguages = [];
+        if ($this->parameterBag->has("well_known.resources.security_txt.preferred_languages")) {
+            $preferredLanguages = $this->parameterBag->get("well_known.resources.security_txt.preferred_languages") ?? [];
+        }
+
         if ($preferredLanguages) {
             $security .= "Preferred-Languages: " . implode(",", $preferredLanguages);
         }
@@ -235,7 +275,11 @@ class WellKnownFactory
         }
 
         $robots = "";
-        $entries = $this->parameterBag->get("well_known.resources.robots_txt") ?? [];
+        $entries = [];
+        if ($this->parameterBag->has("well_known.resources.robots_txt")) {
+            $entries = $this->parameterBag->get("well_known.resources.robots_txt") ?? [];
+        }
+
         foreach ($entries as $entry) {
             foreach ($entry["user-agent"] ?? ["*"] as $_) {
                 $robots .= "User-Agent: " . $_ . PHP_EOL . PHP_EOL;
@@ -333,7 +377,11 @@ class WellKnownFactory
         }
 
         $ads = "";
-        $entries = $this->parameterBag->get("well_known.resources.ads_txt") ?? [];
+        $entries = [];
+        if($this->parameterBag->has("well_known.resources.ads_txt")) {
+            $entries = $this->parameterBag->get("well_known.resources.ads_txt");
+        }
+
         foreach ($entries as $entry) {
             $ads .= implode(" ", $entry);
         }
