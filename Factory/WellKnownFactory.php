@@ -50,6 +50,11 @@ class WellKnownFactory
     /**
      * @var string
      */
+    protected string $projectDir;
+
+    /**
+     * @var string
+     */
     protected string $locationUri;
 
     public function __construct(ParameterBagInterface $parameterBag)
@@ -63,6 +68,7 @@ class WellKnownFactory
         $this->aliasToPublic = $this->parameterBag->get("well_known.alias_to_public");
         $this->overrideExistingFiles = $this->parameterBag->get("well_known.override_existing");
 
+        $this->projectDir = $this->parameterBag->get('kernel.project_dir');
         $this->publicDir = $this->parameterBag->get('kernel.project_dir') . "/public";
     }
 
@@ -125,6 +131,10 @@ class WellKnownFactory
     public function getPublicDir(): string
     {
         return $this->publicDir;
+    }
+    public function getProjectDir(): string
+    {
+        return $this->projectDir;
     }
 
     /**
@@ -248,15 +258,34 @@ class WellKnownFactory
     public function createSymbolink(string $fname)
     {
         $publicPath = $this->getPublicDir() . "/" . basename($fname);
-        if (is_link($publicPath)) {
-            unlink($publicPath);
-        } elseif (file_exists($publicPath) && is_emptydir($publicPath)) {
-            rmdir($publicPath);
-        } else if(file_exists($publicPath) && !is_dir($publicPath)) {
-            exit("Public path \"$publicPath\" already exists but it is not a symlink\n");
+        if ($fname == $publicPath) {
+            return;
         }
 
-        symlink($fname, $publicPath);
+        if (is_link($publicPath)) {
+            unlink($publicPath);
+        }
+        
+        if (file_exists($publicPath)) {
+            if (is_dir($publicPath)) {
+                if (is_emptydir($publicPath)) {
+                    
+                    try { rmdir($publicPath); }
+                    catch(\Exception $exception) { 
+                        exit("Directory \"$publicPath\" exists, but you don't have the permissions.");
+                    }
+
+                } else {
+                    exit("Directory \"$publicPath\" exists and is not empty.\n");
+                }
+            } elseif (is_file($publicPath)) {
+                unlink($publicPath);
+            } else {
+                exit("Cannot safely remove \"$publicPath\" — unknown file type.\n");
+            }
+        }
+
+        symlink(relative_path($fname, dirname($publicPath)), $publicPath);
     }
 
     public function robots(): ?string
