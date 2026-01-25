@@ -5,9 +5,6 @@ namespace Well\Known\DependencyInjection;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Well\Known\Factory\WellKnownFactory;
 
-/**
- *
- */
 class CacheWarmer implements CacheWarmerInterface
 {
     /**

@@ -7,9 +7,6 @@ use DateTimeInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
-/**
- *
- */
 class WellKnownFactory
 {
     /**
