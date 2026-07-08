@@ -38,11 +38,28 @@ class WellKnownExtension extends Extension
         foreach ($config as $key => $value) {
             $fullKey = $globalKey ? $globalKey . '.' . $key : $key;
 
-            if (is_array($value)) {
+            if (is_array($value) && !$this->isList($value)) {
                 $this->setConfiguration($container, $value, $fullKey);
             } else {
                 $container->setParameter($fullKey, $value);
             }
         }
+    }
+
+    /**
+     * A nested config *section* (e.g. security_txt) needs flattening into
+     * its own dot-notation keys, but a plain list value (contacts,
+     * preferred_languages, ads_txt entries, robots_txt entries) needs to be
+     * stored as a single parameter, not exploded into "...key.0",
+     * "...key.1" sub-parameters that nothing ever reads back under their
+     * own aggregate key.
+     */
+    private function isList(array $array): bool
+    {
+        if ($array === []) {
+            return true;
+        }
+
+        return array_keys($array) === range(0, count($array) - 1);
     }
 }

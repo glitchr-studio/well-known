@@ -147,7 +147,8 @@ class WellKnownFactory
             return true;
         }
         if (str_starts_with($fname, $this->getPublicDir())) {
-            $base = explode("/", $this->StringStripPrefix($fname, $this->getPublicDir()), 1)[0];
+            $relative = ltrim($this->StringStripPrefix($fname, $this->getPublicDir()), "/");
+            $base = explode("/", $relative)[0];
             if (!in_array($base, ["bundles", "assets", "storage"])) {
                 return true;
             }
