@@ -18,14 +18,12 @@ ifneq ($(strip $(APP_DEBUG_BAK)),)
 endif
 export APP_ENV APP_DEBUG
 
+# This package ships no front-end assets: there is no assets/ directory and no
+# package.json. The application's `make build-vendor <vendor/name>` still calls
+# `make assets` on every bundle, and the inherited `cd assets && yarn ...` recipe
+# made it fail here. Nothing to build, so say so and succeed.
 assets:
-ifeq ($(APP_DEBUG),1)
-	@cd assets && yarn install
-	@cd assets && yarn run watch
-else
-	@cd assets && yarn install
-	@cd assets && yarn run prod
-endif
+	@echo "No assets to build for this package."
 
 deploy:
 	@composer update
