@@ -253,6 +253,19 @@ class WellKnownFactory
         return $security ? $fname : null;
     }
 
+    /**
+     * $fname, linked from the public directory under its own name.
+     *
+     * Several processes may do it at once - the web, cron and worker
+     * containers of an application warm their caches as they start, each
+     * through WellKnownCacheWarmer. The link is therefore made under a name of
+     * its own and renamed over whatever is there (rename() replaces a file or
+     * a link in one step), and a link that already says the right thing is
+     * left alone: no process removes what another has just made. Before, each
+     * one removed the link it had seen (is_link() then unlink()): the slower
+     * one met "No such file or directory", or symlink() met "File exists", and
+     * its cache warmup - its container - stopped there.
+     */
     public function createSymbolink(string $fname)
     {
         $publicPath = $this->getPublicDir() . "/" . basename($fname);
@@ -260,30 +273,32 @@ class WellKnownFactory
             return;
         }
 
-        if (is_link($publicPath)) {
-            unlink($publicPath);
+        $target = relative_path($fname, dirname($publicPath));
+        if (is_link($publicPath) && readlink($publicPath) === $target) {
+            return;
         }
-        
-        if (file_exists($publicPath)) {
-            if (is_dir($publicPath)) {
-                if (is_emptydir($publicPath)) {
-                    
-                    try { rmdir($publicPath); }
-                    catch(\Exception $exception) { 
-                        exit("Directory \"$publicPath\" exists, but you don't have the permissions.");
-                    }
 
-                } else {
-                    exit("Directory \"$publicPath\" exists and is not empty.\n");
-                }
-            } elseif (is_file($publicPath)) {
-                unlink($publicPath);
-            } else {
-                exit("Cannot safely remove \"$publicPath\" — unknown file type.\n");
+        if (!is_link($publicPath) && is_dir($publicPath)) {
+            if (!is_emptydir($publicPath)) {
+                exit("Directory \"$publicPath\" exists and is not empty.\n");
+            }
+
+            // Another process may have removed it meanwhile: only a directory still there is a refusal.
+            if (!@rmdir($publicPath) && !is_link($publicPath) && is_dir($publicPath)) {
+                exit("Directory \"$publicPath\" exists, but you don't have the permissions.");
+            }
+        } elseif (!is_link($publicPath) && file_exists($publicPath) && !is_file($publicPath)) {
+            exit("Cannot safely remove \"$publicPath\" — unknown file type.\n");
+        }
+
+        $temporary = $publicPath . "." . bin2hex(random_bytes(6)) . ".tmp";
+        symlink($target, $temporary);
+        if (!@rename($temporary, $publicPath)) {
+            @unlink($temporary);
+            if (!is_link($publicPath) || readlink($publicPath) !== $target) {
+                throw new \RuntimeException("Cannot link \"$publicPath\" to \"$target\".");
             }
         }
-
-        symlink(relative_path($fname, dirname($publicPath)), $publicPath);
     }
 
     public function robots(): ?string
