@@ -110,7 +110,17 @@ class CreateSymbolinkTest extends TestCase
             $this->markTestSkipped('proc_open() is disabled.');
         }
 
-        $autoload = \dirname((new \ReflectionClass(\Composer\Autoload\ClassLoader::class))->getFileName(), 2) . '/autoload.php';
+        // The autoloader that loads the bundle in this run - not the one of Composer's ClassLoader class,
+        // which under symfony/phpunit-bridge (an application's simple-phpunit) is PHPUnit's own install
+        // and knows neither the bundle nor the DependencyInjection component.
+        $autoload = null;
+        foreach (\Composer\Autoload\ClassLoader::getRegisteredLoaders() as $vendorDir => $loader) {
+            if ($loader->findFile(WellKnownFactory::class)) {
+                $autoload = $vendorDir . '/autoload.php';
+                break;
+            }
+        }
+        $this->assertNotNull($autoload, 'a registered autoloader knows the bundle');
         $script = $this->projectDir . '/link.php';
         file_put_contents($script, '<?php
             require ' . var_export($autoload, true) . ';
